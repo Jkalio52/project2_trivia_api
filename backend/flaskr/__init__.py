@@ -150,6 +150,20 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/search', methods=['POST'])
+  def search():
+      """
+      Search for questions using the search term
+      :return: Searched questions and total questions
+      """
+      search_term = request.json.get('searchTerm', '')
+      questions = [question.format() for question in Question.query.all() if
+                    re.search(search_term, question.question, re.IGNORECASE)]
+      return jsonify({
+          'questions': questions,
+          'total_questions': len(questions)
+      })
+
 
   '''
   @TODO: 
@@ -159,6 +173,17 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+  def get_questions_by_category(category_id):
+      if not category_id:
+          return abort(400, 'Invalid category id')
+      questions = [question.format() for question in
+                    Question.query.filter(Question.category == category_id)]
+      return jsonify({
+          'questions': questions,
+          'total_questions': len(questions),
+          'current_category': category_id
+      })
 
 
   '''
@@ -172,12 +197,60 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/quizzes', methods=['POST'])
+  def get_quiz_questions():
+      """
+      Gets question for quiz
+      :return: Uniques quiz question or None
+      """
+      previous_questions = request.json.get('previous_questions')
+      quiz_category = request.json.get('quiz_category')
+      if not quiz_category:
+          return abort(400, 'Required keys missing from request body')
+      category_id = int(quiz_category.get('id'))
+      questions = Question.query.filter(
+          Question.category == category_id,
+          ~Question.id.in_(previous_questions)) if category_id else \
+          Question.query.filter(~Question.id.in_(previous_questions))
+      question = questions.order_by(func.random()).first()
+      if not question:
+          return jsonify({})
+      return jsonify({
+          'question': question.format()
+      })
+
 
   '''
   @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
+  # Error Handler
+  @app.errorhandler(HTTPException)
+  def http_exception_handler(error):
+      """
+      HTTP error handler for all endpoints
+      :param error: HTTPException containing code and description
+      :return: error: HTTP status code, message: Error description
+      """
+      return jsonify({
+          'success': False,
+          'error': error.code,
+          'message': error.description
+      }), error.code
+
+  @app.errorhandler(Exception)
+  def exception_handler(error):
+      """
+      Generic error handler for all endpoints
+      :param error: Any exception
+      :return: error: HTTP status code, message: Error description
+      """
+      return jsonify({
+          'success': False,
+          'error': 500,
+          'message': f'Something went wrong: {error}'
+      }), 500
   
   return app
 
