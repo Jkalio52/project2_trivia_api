@@ -78,14 +78,14 @@ _NOTE_: Make sure you create a database named `trivia` in the PostgreSQL server 
 
 ## API Documentation
 
-# Endpoints
-GET "/categories"
-GET "/questions?page=1"
-GET "/categories/<int:category_id>/questions"
-POST "/questions"
-POST "/search"
-POST "/quizzes"
-DELETE "/questions/<int:question_id>"
+### Endpoints
+* GET "/categories"
+* GET "/questions?page=1"
+* GET "/categories/<int:category_id>/questions"
+* POST "/questions"
+* POST "/search"
+* POST "/quizzes"
+* DELETE "/questions/<int:question_id>"
 
 
 * GET "/categories"
