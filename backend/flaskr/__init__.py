@@ -23,11 +23,6 @@ def create_app(test_config=None):
   '''
   @app.after_request
   def set_headers(response):
-      """
-      Intercept response to add 'Access-Control-Allow' headers
-      :param response: HTTP Response
-      :return: Modified HTTP Response
-      """
       response.headers.add('Access-Control-Allow-Headers',
                             'Content-Type, Authorization, true')
       response.headers.add('Access-Control-Allow-Methods',
