@@ -5,6 +5,7 @@ from flask_cors import CORS
 import random
 
 from models import setup_db, Question, Category
+from werkzeug.exceptions import HTTPException
 
 QUESTIONS_PER_PAGE = 10
 
@@ -36,10 +37,6 @@ def create_app(test_config=None):
   '''
   @app.route('/categories', methods=['GET'])
   def get_all_categories():
-      """
-      Creates a dictionary of all categories
-      :return: All categories
-      """
       categories = {}
       for category in Category.query.all():
           categories[category.id] = category.type
@@ -62,10 +59,6 @@ def create_app(test_config=None):
   '''
   @app.route('/questions', methods=['GET'])
   def get_questions():
-      """
-      Get all questions, categories and total questions from database
-      :return: Questions, categories and total questions
-      """
       categories = {}
       for category in Category.query.all():
           categories[category.id] = category.type
@@ -90,11 +83,6 @@ def create_app(test_config=None):
   '''
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
-      """
-      Delete a question using question id
-      :param question_id: Id of the question to be deleted
-      :return: Id of the question that has been deleted
-      """
       question = Question.query.get(question_id)
       if not question:
           return abort(404, f'No question found with id: {question_id}')
@@ -148,7 +136,7 @@ def create_app(test_config=None):
   @app.route('/search', methods=['POST'])
   def search():
       """
-      Search for questions using the search term
+      Search for questions using the search terms then
       :return: Searched questions and total questions
       """
       search_term = request.json.get('searchTerm', '')
@@ -194,10 +182,6 @@ def create_app(test_config=None):
   '''
   @app.route('/quizzes', methods=['POST'])
   def get_quiz_questions():
-      """
-      Gets question for quiz
-      :return: Uniques quiz question or None
-      """
       previous_questions = request.json.get('previous_questions')
       quiz_category = request.json.get('quiz_category')
       if not quiz_category:
@@ -223,11 +207,6 @@ def create_app(test_config=None):
   # Error Handler
   @app.errorhandler(HTTPException)
   def http_exception_handler(error):
-      """
-      HTTP error handler for all endpoints
-      :param error: HTTPException containing code and description
-      :return: error: HTTP status code, message: Error description
-      """
       return jsonify({
           'success': False,
           'error': error.code,
